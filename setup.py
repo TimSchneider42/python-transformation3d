@@ -4,12 +4,12 @@ with open("README.md", "r") as f:
     long_description = f.read()
 
 setup(
-    name="transformation",
+    name="transformation3d",
     version="1.0.0",
     description="An easy-to-use class representing a transformation in 3D space.",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/TimSchneider42/transformation",
+    url="https://github.com/TimSchneider42/transformation3d",
     author="Tim Schneider",
     author_email="schneider@ias.informatik.tu-darmstadt.de",
     license="MIT",
