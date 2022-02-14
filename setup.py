@@ -9,7 +9,7 @@ setup(
     description="An easy-to-use class representing a transformation in 3D space.",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/TimSchneider42/transformation3d",
+    url="https://github.com/TimSchneider42/python-transformation3d",
     author="Tim Schneider",
     author_email="schneider@ias.informatik.tu-darmstadt.de",
     license="MIT",
