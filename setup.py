@@ -5,8 +5,8 @@ with open("README.md", "r") as f:
 
 setup(
     name="transformation3d",
-    version="1.0.1",
-    description="An easy-to-use class representing a transformation in 3D space.",
+    version="2.0.0",
+    description="An easy-to-use class representing transformations in 3D space.",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/TimSchneider42/python-transformation3d",
