@@ -29,7 +29,8 @@ from scipy.spatial.transform import Rotation
 
 
 class Transformation:
-    def __init__(self, translation: Optional[Sequence[float]] = None, rotation: Optional[Rotation] = None):
+    def __init__(self, translation: Optional[Sequence[Union[Sequence[float], float]]] = None,
+                 rotation: Optional[Rotation] = None):
         translation = np.zeros((3,)) if translation is None else np.asarray(translation)
         rotation = Rotation.from_quat(np.array([0, 0, 0, 1])) if rotation is None else rotation
         if len(translation.shape) not in [1, 2] or translation.shape[-1] != 3:
