@@ -156,7 +156,7 @@ class Transformation:
         return Transformation(self.__translation[item], self.__rotation[item])
 
     def __len__(self):
-        return self.__translation.shape[0]
+        return None if self.single else self.__translation.shape[0]
 
     def __repr__(self):
         return "Transformation({}, {})".format(self.__translation.tolist(), self.__rotation.as_quat().tolist())
