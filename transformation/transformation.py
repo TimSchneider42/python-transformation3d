@@ -36,7 +36,12 @@ class Transformation:
         if len(translation.shape) not in [1, 2] or translation.shape[-1] != 3:
             raise ValueError("Translation must be an array of shape Nx3 or 3.")
         translation_single = len(translation.shape) == 1
-        if not rotation.single and not translation_single:
+        rotation_single = rotation.single
+        if rotation_single and not translation_single:
+            rotation = Rotation.from_quat(rotation.as_quat()[None])
+        elif translation_single and not rotation_single:
+            translation = translation[None]
+        if not rotation_single or not translation_single:
             td = translation.shape[0]
             rd = len(rotation)
             if td == 1 and rd != 1:
@@ -46,10 +51,6 @@ class Transformation:
             if td != rd and td != 1 and rd != 1:
                 raise ValueError(
                     "Translation and rotation have incompatible batch dimensions ({} vs {}).".format(td, rd))
-        if rotation.single and not translation_single:
-            rotation = Rotation.from_quat(rotation.as_quat()[None])
-        if translation_single and not rotation.single:
-            translation = translation[None]
         self.__translation = translation
         self.__rotation = rotation
 
@@ -154,6 +155,9 @@ class Transformation:
 
     def __getitem__(self, item: Union[int, slice]):
         return Transformation(self.__translation[item], self.__rotation[item])
+
+    def __iter__(self):
+        return (self[i] for i in range(len(self)))
 
     def __len__(self):
         return None if self.single else self.__translation.shape[0]
