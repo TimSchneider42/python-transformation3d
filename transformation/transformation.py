@@ -105,6 +105,12 @@ class Transformation:
     def from_dict(cls, transformation_dict: Dict[str, Sequence[float]]) -> "Transformation":
         return Transformation.from_pos_quat(transformation_dict["translation"], transformation_dict["rotation"])
 
+    @classmethod
+    def batch_concatenate(cls, transformations: Sequence["Transformation"]) -> "Transformation":
+        translations = np.concatenate([t.translation.reshape((-1, 3)) for t in transformations])
+        rotations = Rotation.from_quat(np.concatenate([t.quaternion.reshape((-1, 4)) for t in transformations]))
+        return Transformation(translations, rotations)
+
     @property
     def rotation(self) -> Rotation:
         return self.__rotation
