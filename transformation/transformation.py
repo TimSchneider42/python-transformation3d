@@ -124,7 +124,7 @@ class Transformation:
         return self.__rotation.as_quat()
 
     @property
-    def angle(self) -> float:
+    def angle(self) -> Union[float, np.ndarray]:
         q = self.__rotation.as_quat()
         return np.abs(2 * np.arctan2(np.linalg.norm(q[..., :-1], axis=-1), np.abs(q[..., -1])))
 
