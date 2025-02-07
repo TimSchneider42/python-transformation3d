@@ -8,7 +8,7 @@ version = "2.2.1"
 description = "An easy-to-use class representing transformations in 3D space."
 readme = "README.md"
 authors = [
-    { name = "Tim Schneider", email = "schneider@ias.informatik.tu-darmstadt.de" }
+    { name = "Tim Schneider", email = "tim@robot-learning.de" }
 ]
 license = { text = "MIT" }
 dependencies = [
