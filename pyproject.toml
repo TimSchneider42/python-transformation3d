@@ -10,7 +10,7 @@ readme = "README.md"
 authors = [
     { name = "Tim Schneider", email = "tim@robot-learning.de" }
 ]
-license = { text = "MIT" }
+license = "MIT"
 dependencies = [
     "scipy",
     "numpy"
