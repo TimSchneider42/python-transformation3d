@@ -29,10 +29,15 @@ from scipy.spatial.transform import Rotation
 
 
 class Transformation:
-    def __init__(self, translation: Optional[Sequence[Union[Sequence[float], float]]] = None,
-                 rotation: Optional[Rotation] = None):
+    def __init__(
+        self,
+        translation: Optional[Sequence[Union[Sequence[float], float]]] = None,
+        rotation: Optional[Rotation] = None,
+    ):
         translation = np.zeros((3,)) if translation is None else np.asarray(translation)
-        rotation = Rotation.from_quat(np.array([0, 0, 0, 1])) if rotation is None else rotation
+        rotation = (
+            Rotation.from_quat(np.array([0, 0, 0, 1])) if rotation is None else rotation
+        )
         if len(translation.shape) not in [1, 2] or translation.shape[-1] != 3:
             raise ValueError("Translation must be an array of shape Nx3 or 3.")
         translation_single = len(translation.shape) == 1
@@ -47,20 +52,32 @@ class Transformation:
             if td == 1 and rd != 1:
                 translation = np.repeat(translation.reshape((-1, 3)), rd, axis=0)
             elif rd == 1 and td != 1:
-                rotation = Rotation.from_quat(np.repeat(rotation.as_quat().reshape((-1, 4)), td, axis=0))
+                rotation = Rotation.from_quat(
+                    np.repeat(rotation.as_quat().reshape((-1, 4)), td, axis=0)
+                )
             if td != rd and td != 1 and rd != 1:
                 raise ValueError(
-                    "Translation and rotation have incompatible batch dimensions ({} vs {}).".format(td, rd))
+                    "Translation and rotation have incompatible batch dimensions ({} vs {}).".format(
+                        td, rd
+                    )
+                )
         self.__translation = translation
         self.__rotation = rotation
 
-    def transform(self, other: Union["Transformation", np.ndarray], inverse: bool = False) \
-            -> Union["Transformation", np.ndarray]:
+    def transform(
+        self, other: Union["Transformation", np.ndarray], inverse: bool = False
+    ) -> Union["Transformation", np.ndarray]:
         if isinstance(other, np.ndarray):
             return self._transform_positions(other, inverse=inverse)
 
-        output_pos = self._transform_positions(np.array(other.translation), inverse=inverse)
-        output_rot = self.__rotation * other.rotation if not inverse else self.__rotation.inv() * other.rotation
+        output_pos = self._transform_positions(
+            np.array(other.translation), inverse=inverse
+        )
+        output_rot = (
+            self.__rotation * other.rotation
+            if not inverse
+            else self.__rotation.inv() * other.rotation
+        )
 
         return Transformation(output_pos, output_rot)
 
@@ -70,7 +87,7 @@ class Transformation:
     def to_dict(self):
         return {
             "translation": self.__translation.tolist(),
-            "rotation": self.__rotation.as_quat().tolist()
+            "rotation": self.__rotation.as_quat().tolist(),
         }
 
     def _transform_positions(self, positions: np.ndarray, inverse: bool = False):
@@ -80,18 +97,35 @@ class Transformation:
             return self.__rotation.apply((positions - self.__translation), inverse=True)
 
     @classmethod
-    def from_pos_quat(cls, position: Optional[Sequence[float]] = None,
-                      quaternion: Optional[Sequence[float]] = None) -> "Transformation":
-        return cls(position, None if quaternion is None else Rotation.from_quat(quaternion))
+    def from_pos_quat(
+        cls,
+        position: Optional[Sequence[float]] = None,
+        quaternion: Optional[Sequence[float]] = None,
+    ) -> "Transformation":
+        return cls(
+            position, None if quaternion is None else Rotation.from_quat(quaternion)
+        )
 
     @classmethod
-    def from_pos_euler(cls, position: Optional[Sequence[float]] = None,
-                       euler_angles: Optional[Sequence[float]] = None, sequence: str = "xyz") -> "Transformation":
-        return cls(position, None if euler_angles is None else Rotation.from_euler(sequence, euler_angles))
+    def from_pos_euler(
+        cls,
+        position: Optional[Sequence[float]] = None,
+        euler_angles: Optional[Sequence[float]] = None,
+        sequence: str = "xyz",
+    ) -> "Transformation":
+        return cls(
+            position,
+            None
+            if euler_angles is None
+            else Rotation.from_euler(sequence, euler_angles),
+        )
 
     @classmethod
-    def from_pos_rotvec(cls, position: Optional[Sequence[float]] = None,
-                        rotvec: Optional[Sequence[float]] = None) -> "Transformation":
+    def from_pos_rotvec(
+        cls,
+        position: Optional[Sequence[float]] = None,
+        rotvec: Optional[Sequence[float]] = None,
+    ) -> "Transformation":
         return cls(position, None if rotvec is None else Rotation.from_rotvec(rotvec))
 
     @classmethod
@@ -102,13 +136,23 @@ class Transformation:
         return cls(translation, rotation)
 
     @classmethod
-    def from_dict(cls, transformation_dict: Dict[str, Sequence[float]]) -> "Transformation":
-        return Transformation.from_pos_quat(transformation_dict["translation"], transformation_dict["rotation"])
+    def from_dict(
+        cls, transformation_dict: Dict[str, Sequence[float]]
+    ) -> "Transformation":
+        return Transformation.from_pos_quat(
+            transformation_dict["translation"], transformation_dict["rotation"]
+        )
 
     @classmethod
-    def batch_concatenate(cls, transformations: Sequence["Transformation"]) -> "Transformation":
-        translations = np.concatenate([t.translation.reshape((-1, 3)) for t in transformations])
-        rotations = Rotation.from_quat(np.concatenate([t.quaternion.reshape((-1, 4)) for t in transformations]))
+    def batch_concatenate(
+        cls, transformations: Sequence["Transformation"]
+    ) -> "Transformation":
+        translations = np.concatenate(
+            [t.translation.reshape((-1, 3)) for t in transformations]
+        )
+        rotations = Rotation.from_quat(
+            np.concatenate([t.quaternion.reshape((-1, 4)) for t in transformations])
+        )
         return Transformation(translations, rotations)
 
     @property
@@ -126,7 +170,9 @@ class Transformation:
     @property
     def angle(self) -> Union[float, np.ndarray]:
         q = self.__rotation.as_quat()
-        return np.abs(2 * np.arctan2(np.linalg.norm(q[..., :-1], axis=-1), np.abs(q[..., -1])))
+        return np.abs(
+            2 * np.arctan2(np.linalg.norm(q[..., :-1], axis=-1), np.abs(q[..., -1]))
+        )
 
     @property
     def rotvec(self) -> np.ndarray:
@@ -145,7 +191,7 @@ class Transformation:
 
     @property
     def inv(self) -> "Transformation":
-        pos = - self.__rotation.apply(self.__translation, inverse=True)
+        pos = -self.__rotation.apply(self.__translation, inverse=True)
         rot = self.__rotation.inv()
         return Transformation(pos, rot)
 
@@ -153,10 +199,14 @@ class Transformation:
     def single(self):
         return self.__rotation.single
 
-    def __mul__(self, other: Union["Transformation", Sequence["Transformation"], np.ndarray]):
+    def __mul__(
+        self, other: Union["Transformation", Sequence["Transformation"], np.ndarray]
+    ):
         return self.transform(other)
 
-    def __matmul__(self, other: Union["Transformation", Sequence["Transformation"], np.ndarray]):
+    def __matmul__(
+        self, other: Union["Transformation", Sequence["Transformation"], np.ndarray]
+    ):
         return self.transform(other)
 
     def __getitem__(self, item: Union[int, slice]):
@@ -169,4 +219,6 @@ class Transformation:
         return None if self.single else self.__translation.shape[0]
 
     def __repr__(self):
-        return "Transformation({}, {})".format(self.__translation.tolist(), self.__rotation.as_quat().tolist())
+        return "Transformation({}, {})".format(
+            self.__translation.tolist(), self.__rotation.as_quat().tolist()
+        )
