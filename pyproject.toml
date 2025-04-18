@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "transformation3d"
-version = "2.2.3"
+version = "2.2.4"
 description = "An easy-to-use class representing transformations in 3D space."
 readme = "README.md"
 authors = [
