@@ -27,13 +27,14 @@ from __future__ import annotations
 from typing import Sequence
 
 import numpy as np
+import numpy.typing as npt
 from scipy.spatial.transform import Rotation
 
 
 class Transformation:
     def __init__(
         self,
-        translation: Sequence[Sequence[float] | float] | None = None,
+        translation: npt.ArrayLike | None = None,
         rotation: Rotation | None = None,
     ):
         translation = np.zeros((3,)) if translation is None else np.asarray(translation)
@@ -67,10 +68,10 @@ class Transformation:
         self.__rotation = rotation
 
     def transform(
-        self, other: Transformation | np.ndarray, inverse: bool = False
+        self, other: Transformation | npt.ArrayLike, inverse: bool = False
     ) -> Transformation | np.ndarray:
-        if isinstance(other, np.ndarray):
-            return self._transform_positions(other, inverse=inverse)
+        if not isinstance(other, Transformation):
+            return self._transform_positions(np.asarray(other), inverse=inverse)
 
         output_pos = self._transform_positions(
             np.array(other.translation), inverse=inverse
@@ -101,8 +102,8 @@ class Transformation:
     @classmethod
     def from_pos_quat(
         cls,
-        position: Sequence[Sequence[float] | float] | None = None,
-        quaternion: Sequence[Sequence[float] | float] | None = None,
+        position: npt.ArrayLike | None = None,
+        quaternion: npt.ArrayLike | None = None,
     ) -> Transformation:
         return cls(
             position, None if quaternion is None else Rotation.from_quat(quaternion)
@@ -111,8 +112,8 @@ class Transformation:
     @classmethod
     def from_pos_euler(
         cls,
-        position: Sequence[Sequence[float] | float] | None = None,
-        euler_angles: Sequence[Sequence[float] | float] | None = None,
+        position: npt.ArrayLike | None = None,
+        euler_angles: npt.ArrayLike | None = None,
         sequence: str = "xyz",
     ) -> Transformation:
         return cls(
@@ -125,24 +126,20 @@ class Transformation:
     @classmethod
     def from_pos_rotvec(
         cls,
-        position: Sequence[Sequence[float] | float] | None = None,
-        rotvec: Sequence[Sequence[float] | float] | None = None,
+        position: npt.ArrayLike | None = None,
+        rotvec: npt.ArrayLike | None = None,
     ) -> Transformation:
         return cls(position, None if rotvec is None else Rotation.from_rotvec(rotvec))
 
     @classmethod
-    def from_matrix(
-        cls, matrix: Sequence[Sequence[Sequence[float] | float]]
-    ) -> Transformation:
+    def from_matrix(cls, matrix: npt.ArrayLike) -> Transformation:
         matrix = np.asarray(matrix)
         translation = matrix[..., :3, 3]
         rotation = Rotation.from_matrix(matrix[..., :3, :3])
         return cls(translation, rotation)
 
     @classmethod
-    def from_dict(
-        cls, transformation_dict: dict[str, Sequence[Sequence[float] | float]]
-    ) -> Transformation:
+    def from_dict(cls, transformation_dict: dict[str, npt.ArrayLike]) -> Transformation:
         return Transformation.from_pos_quat(
             transformation_dict["translation"], transformation_dict["rotation"]
         )
@@ -203,10 +200,12 @@ class Transformation:
     def single(self):
         return self.__rotation.single
 
-    def __mul__(self, other: Transformation | Sequence[Transformation] | np.ndarray):
+    def __mul__(self, other: Transformation | Sequence[Transformation] | npt.ArrayLike):
         return self.transform(other)
 
-    def __matmul__(self, other: Transformation | Sequence[Transformation] | np.ndarray):
+    def __matmul__(
+        self, other: Transformation | Sequence[Transformation] | npt.ArrayLike
+    ):
         return self.transform(other)
 
     def __getitem__(self, item: int | slice | np.ndarray):
